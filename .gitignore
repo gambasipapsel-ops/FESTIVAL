@@ -1,0 +1,24 @@
+# Konfigurasi rahasia
+.env
+.env.*
+!.env.example
+
+# Data runtime (sesi, cache, rate limit, log, akun admin)
+storage/cache/*
+storage/ratelimit/*
+storage/logs/*
+storage/sessions/*
+storage/admin/*
+!storage/**/.gitkeep
+!storage/.htaccess
+
+# Build & tools lokal
+public/assets/css/tailwind.css
+tools/bin/
+tests/.tmp/
+node_modules/
+.clasp.json
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

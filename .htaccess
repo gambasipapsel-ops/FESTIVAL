@@ -1,0 +1,30 @@
+# GAMBASI - jika DocumentRoot mengarah ke folder project (bukan /public),
+# semua request diarahkan ke /public dan folder internal diblokir.
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Paksa HTTPS di produksi. HARUS di atas rewrite ke public/ agar URL redirect
+    # tetap URL asli (tanpa awalan /public). Dilewati untuk localhost, 127.0.0.1,
+    # ::1, dan host *.test (virtual host Laragon).
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteCond %{HTTP_HOST} !^localhost(:[0-9]+)?$ [NC]
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1(:[0-9]+)?$
+    RewriteCond %{HTTP_HOST} !^\[?::1\]?(:[0-9]+)?$
+    RewriteCond %{HTTP_HOST} !\.test(:[0-9]+)?$ [NC]
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+    # Folder & file internal tidak boleh diakses dari web
+    RewriteRule ^(app|storage|google-apps-script|tests|tools|vendor)(/|$) - [F,L,NC]
+    RewriteRule (^|/)\. - [F,L]
+
+    RewriteRule ^$ public/ [L]
+    RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
+</IfModule>
+
+<FilesMatch "(^\.|\.(env|md|json|lock|gs|log|example|ini|sh|bat)$)">
+    Require all denied
+</FilesMatch>

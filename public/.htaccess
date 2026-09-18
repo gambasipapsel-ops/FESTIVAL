@@ -1,0 +1,49 @@
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+
+# Paksa HTTPS di produksi.
+# Dilewati untuk pengembangan lokal: localhost, 127.0.0.1, ::1, dan host *.test
+# (virtual host Laragon), sehingga http://gambasi.test tetap bisa dibuka.
+# X-Forwarded-Proto diperiksa agar tidak terjadi redirect berulang bila situs
+# berada di belakang reverse proxy/CDN yang sudah menangani TLS.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteCond %{HTTP_HOST} !^localhost(:[0-9]+)?$ [NC]
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1(:[0-9]+)?$
+    RewriteCond %{HTTP_HOST} !^\[?::1\]?(:[0-9]+)?$
+    RewriteCond %{HTTP_HOST} !\.test(:[0-9]+)?$ [NC]
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# Batas upload (dokumen maks 5 MB + overhead multipart)
+<IfModule php_module>
+    php_value upload_max_filesize 6M
+    php_value post_max_size 8M
+    php_value max_execution_time 180
+    php_flag display_errors off
+</IfModule>
+<IfModule mod_php.c>
+    php_value upload_max_filesize 6M
+    php_value post_max_size 8M
+    php_value max_execution_time 180
+    php_flag display_errors off
+</IfModule>
+
+<FilesMatch "(^\.|\.(env|md|json|log|ini|sh|bat)$)">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    <FilesMatch "\.(css|js|svg|png|jpg|woff2)$">
+        Header set Cache-Control "public, max-age=604800"
+        Header set X-Content-Type-Options "nosniff"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>

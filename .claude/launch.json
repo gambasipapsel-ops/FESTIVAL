@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "fake-gas",
+      "runtimeExecutable": "C:\\laragon\\bin\\nodejs\\node-v22\\node.exe",
+      "runtimeArgs": ["tests/gas/server.js", "8800"],
+      "port": 8800
+    },
+    {
+      "name": "gambasi-dev",
+      "runtimeExecutable": "C:\\laragon\\bin\\php\\php-8.3.33-Win32-vs16-x64\\php.exe",
+      "runtimeArgs": ["-d", "upload_max_filesize=6M", "-d", "post_max_size=8M", "-S", "127.0.0.1:8801", "-t", "public"],
+      "env": { "GAMBASI_ENV_FILE": "tests/dev/dev.env" },
+      "port": 8801
+    }
+  ]
+}
