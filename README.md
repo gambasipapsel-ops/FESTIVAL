@@ -436,3 +436,4 @@ Pesan tidak pernah memuat NIK atau data anak/orang tua.
 ### Data yang belum ditetapkan (tidak dikarang)
 
 Hadiah, jumlah pemain/official resmi, batas usia, tanggal cutoff, regulasi pertandingan, kontak panitia, rekening, sponsor, dan nomor WhatsApp **tidak** diisi oleh sistem. Semuanya disediakan sebagai konfigurasi (`.env` atau Script Properties/Admin → Pengaturan) dan ditampilkan sebagai "Akan diumumkan panitia" selama masih kosong.
+# FESTIVAL
