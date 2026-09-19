@@ -52,7 +52,7 @@ function http_status_for(string $code): int
         'FORBIDDEN' => 403,
         'RATE_LIMITED' => 429,
         'REGISTRATION_CLOSED', 'SUBMISSION_EXPIRED' => 410,
-        'BUSY', 'API_UNAVAILABLE', 'API_TIMEOUT', 'DRIVE_ERROR', 'SHEETS_ERROR', 'CONFIG_ERROR' => 503,
+        'BUSY', 'API_UNAVAILABLE', 'API_NOT_PUBLIC', 'API_WRONG_BACKEND', 'API_TIMEOUT', 'DRIVE_ERROR', 'SHEETS_ERROR', 'CONFIG_ERROR' => 503,
         default => 500,
     };
 }
