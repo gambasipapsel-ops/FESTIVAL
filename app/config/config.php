@@ -58,7 +58,8 @@ return [
         'env'   => env('APP_ENV', 'production'),
         'debug' => env_bool('APP_DEBUG'),
         'url'   => rtrim(env('APP_URL'), '/'),
-        'tailwind_mode' => env('TAILWIND_MODE', 'cdn'),
+        // auto: pakai public/assets/css/tailwind.css bila ada, jika tidak ada pakai CDN
+        'tailwind_mode' => env('TAILWIND_MODE', 'auto'),
     ],
 
     // EVENT MASTER DATA - RESMI, JANGAN DIUBAH TANPA INSTRUKSI
@@ -101,6 +102,10 @@ return [
         // Jadwal resmi panitia (dapat diganti via .env)
         'pendaftaran_buka'   => env('PENDAFTARAN_BUKA') !== '' ? env('PENDAFTARAN_BUKA') : '1 Oktober 2026',
         'pendaftaran_tutup'  => env('PENDAFTARAN_TUTUP') !== '' ? env('PENDAFTARAN_TUTUP') : '14 Oktober 2026',
+        // Jadwal yang DITEGAKKAN sistem (waktu WIT). Di luar rentang ini formulir tidak dapat dikirim
+        // walaupun saklar "Pendaftaran dibuka" di Pengaturan admin aktif. Kosongkan untuk tanpa batas.
+        'pendaftaran_buka_iso'  => env('PENDAFTARAN_BUKA_ISO', '2026-10-01T00:00:00+09:00'),
+        'pendaftaran_tutup_iso' => env('PENDAFTARAN_TUTUP_ISO', '2026-10-14T23:59:59+09:00'),
         'jadwal_pendaftaran' => env('JADWAL_PENDAFTARAN') !== '' ? env('JADWAL_PENDAFTARAN') : '1 – 14 Oktober 2026',
         'batas_pendaftaran'  => env('BATAS_PENDAFTARAN') !== '' ? env('BATAS_PENDAFTARAN') : '14 Oktober 2026',
         'jadwal_verifikasi'  => env('JADWAL_VERIFIKASI'),
@@ -139,7 +144,9 @@ return [
             'upload'          => [400, 600],
             'submit_finalize' => [40, 600],
             'check_status'    => [20, 300],
-            'admin_login'     => [5, 900],
+            // Per jaringan/IP (dilonggarkan: admin sering memakai Wi-Fi kantor yang sama).
+            // Batas per akun (5 / 15 menit) ada di admin_attempt_login().
+            'admin_login'     => [20, 900],
         ],
     ],
 

@@ -54,7 +54,13 @@ render_view('header', ['title' => 'Pendaftaran Club Sepak Bola — GAMBASI Papua
       </div>
     <?php elseif (!$open): ?>
       <div class="notice notice-error mt-6" role="alert">
-        <strong>Pendaftaran sedang ditutup.</strong> Pendaftaran dibuka <?= e(info_or_tba('pendaftaran_buka')) ?> dan ditutup <?= e(info_or_tba('pendaftaran_tutup')) ?>. Pantau informasi resmi dari panitia.
+        <?php if (($pub['registration_window'] ?? '') === 'before'): ?>
+          <strong>Pendaftaran belum dibuka.</strong> Pendaftaran dibuka <?= e(info_or_tba('pendaftaran_buka')) ?> dan ditutup <?= e(info_or_tba('pendaftaran_tutup')) ?>. Anda dapat mengisi formulir sebagai draft terlebih dahulu.
+        <?php elseif (($pub['registration_window'] ?? '') === 'after'): ?>
+          <strong>Pendaftaran sudah ditutup</strong> pada <?= e(info_or_tba('pendaftaran_tutup')) ?>. Hubungi panitia bila ada pertanyaan.
+        <?php else: ?>
+          <strong>Pendaftaran sedang ditutup.</strong> Pendaftaran dibuka <?= e(info_or_tba('pendaftaran_buka')) ?> dan ditutup <?= e(info_or_tba('pendaftaran_tutup')) ?>. Pantau informasi resmi dari panitia.
+        <?php endif; ?>
       </div>
     <?php elseif (!$rulesReady): ?>
       <div class="notice notice-warn mt-6" role="alert">

@@ -21,7 +21,12 @@ if (empty($pub['available'])) {
     json_error('Layanan pendaftaran belum dapat diakses. Silakan coba lagi nanti.', (string) ($pub['error_code'] ?? 'API_UNAVAILABLE'), 503);
 }
 if (empty($pub['registration_open'])) {
-    json_error('Pendaftaran sedang ditutup oleh panitia.', 'REGISTRATION_CLOSED', 410);
+    $msg = match ($pub['registration_window'] ?? '') {
+        'before' => 'Pendaftaran belum dibuka. Pendaftaran dibuka ' . info_or_tba('pendaftaran_buka') . '.',
+        'after'  => 'Pendaftaran sudah ditutup pada ' . info_or_tba('pendaftaran_tutup') . '.',
+        default  => 'Pendaftaran sedang ditutup oleh panitia.',
+    };
+    json_error($msg, 'REGISTRATION_CLOSED', 410);
 }
 
 [$payload, $errors] = validate_registration_payload(is_array($body['payload'] ?? null) ? $body['payload'] : [], $pub);

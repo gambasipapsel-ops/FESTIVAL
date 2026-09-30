@@ -146,6 +146,42 @@ function gas_request(string $action, array $data = [], ?array $admin = null, ?in
  */
 function gas_public_config(bool $refresh = false): array
 {
+    return apply_registration_window(gas_public_config_raw($refresh));
+}
+
+/**
+ * Status jadwal pendaftaran menurut kalender resmi panitia (.env PENDAFTARAN_BUKA_ISO /
+ * PENDAFTARAN_TUTUP_ISO). Nilai kosong berarti tanpa batas pada sisi tersebut.
+ * @return string 'before' | 'open' | 'after'
+ */
+function registration_window(?int $now = null): string
+{
+    $now ??= time();
+    $start = strtotime((string) config('info.pendaftaran_buka_iso', ''));
+    $end = strtotime((string) config('info.pendaftaran_tutup_iso', ''));
+    if ($start !== false && $now < $start) {
+        return 'before';
+    }
+    if ($end !== false && $now > $end) {
+        return 'after';
+    }
+    return 'open';
+}
+
+/**
+ * Pendaftaran hanya terbuka bila saklar panitia (Pengaturan admin) AKTIF
+ * dan waktu sekarang berada di dalam jadwal resmi.
+ */
+function apply_registration_window(array $pub): array
+{
+    $pub['registration_switch'] = !empty($pub['registration_open']);
+    $pub['registration_window'] = registration_window();
+    $pub['registration_open'] = $pub['registration_switch'] && $pub['registration_window'] === 'open';
+    return $pub;
+}
+
+function gas_public_config_raw(bool $refresh = false): array
+{
     $file = config('storage') . '/cache/public_config.json';
     if (!$refresh && is_file($file) && filemtime($file) > time() - 300) {
         $cached = json_decode((string) file_get_contents($file), true);

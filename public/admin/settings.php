@@ -89,6 +89,12 @@ render_view('admin/header', ['title' => 'Pengaturan', 'active' => 'settings']);
           <input type="checkbox" name="REGISTRATION_OPEN" value="true" class="h-5 w-5 rounded border-slate-300 text-royal-700" <?= !empty($d['registration_open']) ? 'checked' : '' ?>>
           <span><span class="font-semibold text-slate-900">Pendaftaran dibuka</span><br><span class="text-sm text-slate-500">Jika tidak dicentang, formulir tidak dapat dikirim.</span></span>
         </label>
+        <?php $win = registration_window(); ?>
+        <p class="rounded-xl px-4 py-3 text-sm ring-1 <?= $win === 'open' ? 'bg-royal-50 text-royal-800 ring-royal-200' : 'bg-amber-50 text-amber-900 ring-amber-200' ?>">
+          Jadwal resmi (otomatis): dibuka <strong><?= e(info_or_tba('pendaftaran_buka')) ?></strong>, ditutup <strong><?= e(info_or_tba('pendaftaran_tutup')) ?></strong>.
+          Saat ini: <strong><?= e(['before' => 'belum masuk jadwal', 'open' => 'dalam jadwal', 'after' => 'jadwal sudah lewat'][$win]) ?></strong>.
+          Formulir hanya bisa dikirim bila saklar di atas aktif <em>dan</em> dalam jadwal. Jadwal diubah lewat <code>PENDAFTARAN_BUKA_ISO</code> / <code>PENDAFTARAN_TUTUP_ISO</code> di file <code>.env</code>.
+        </p>
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
             <label for="AGE_REFERENCE_DATE" class="field-label">Tanggal acuan usia</label>

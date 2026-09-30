@@ -199,6 +199,9 @@ BIAYA_PENDAFTARAN=
 # Jadwal resmi (default bawaan aplikasi bila dikosongkan)
 PENDAFTARAN_BUKA=1 Oktober 2026
 PENDAFTARAN_TUTUP=14 Oktober 2026
+# Jadwal yang ditegakkan sistem (WIT). Di luar rentang ini formulir tidak bisa dikirim.
+PENDAFTARAN_BUKA_ISO=2026-10-01T00:00:00+09:00
+PENDAFTARAN_TUTUP_ISO=2026-10-14T23:59:59+09:00
 JADWAL_PENDAFTARAN=1 – 14 Oktober 2026
 BATAS_PENDAFTARAN=14 Oktober 2026
 JADWAL_VERIFIKASI=
@@ -298,8 +301,8 @@ Buat admin dev dengan `set GAMBASI_ENV_FILE=...` lalu jalankan `php tools/create
      ```
      Tanpa ini Apache dapat membaca `.htaccess` induk tanpa izin override dan membalas HTTP 500
      (`<IfModule not allowed here`).
-2. `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://domain-anda`, `TAILWIND_MODE=build`.
-3. Build CSS tanpa Node memakai [Tailwind Standalone CLI v3](https://github.com/tailwindlabs/tailwindcss/releases) (simpan binary di `tools/bin/`):
+2. `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://domain-anda`, `TAILWIND_MODE=auto` (atau hapus baris `TAILWIND_MODE=cdn`).
+3. `public/assets/css/tailwind.css` sudah ikut di repo. **Build ulang setiap kali mengubah class Tailwind** di file PHP/JS. Build CSS tanpa Node memakai [Tailwind Standalone CLI v3](https://github.com/tailwindlabs/tailwindcss/releases) (simpan binary di `tools/bin/`):
    ```bash
    tools\bin\tailwindcss.exe -c tools/tailwind/tailwind.config.js -i tools/tailwind/input.css -o public/assets/css/tailwind.css --minify
    ```

@@ -2,7 +2,7 @@
 /** @var string $title */
 /** @var string $description */
 $nonce = csp_nonce();
-$useBuild = config('app.tailwind_mode') === 'build' && is_file(GAMBASI_ROOT . '/public/assets/css/tailwind.css');
+$useBuild = config('app.tailwind_mode') !== 'cdn' && is_file(GAMBASI_ROOT . '/public/assets/css/tailwind.css');
 ?>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

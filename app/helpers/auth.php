@@ -31,7 +31,7 @@ function admin_attempt_login(string $username, string $password): array
     $username = strtolower(clean_text($username, 60));
     $generic = ['ok' => false, 'message' => 'Username atau password salah.'];
 
-    if (!rate_limit('admin_login') || !rate_limit('admin_login', 10, 900, 'user:' . $username)) {
+    if (!rate_limit('admin_login') || !rate_limit('admin_login', 5, 900, 'user:' . $username)) {
         return ['ok' => false, 'message' => 'Terlalu banyak percobaan login. Coba lagi dalam 15 menit.'];
     }
 

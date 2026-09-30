@@ -21,6 +21,8 @@ $node = getenv('NODE_BIN') ?: 'node';
 const GAS_PORT = 8790;
 const WEB_PORT = 8791;
 const DOWN_PORT = 8792;
+const BEFORE_PORT = 8793;
+const AFTER_PORT = 8794;
 const SECRET = 'test-secret-0123456789abcdef0123456789abcdef';
 
 // ------------------------------------------------------------------ setup
@@ -38,7 +40,12 @@ mkdir($tmp . '/storage-down', 0777, true);
 mkdir($tmp . '/files', 0777, true);
 
 $envCommon = "APP_ENV=test\nAPP_DEBUG=false\nGAMBASI_API_SECRET=" . SECRET . "\nADMIN_USERS_FILE=tests/.tmp/php-it/admins.json\nSESSION_TIMEOUT_MINUTES=30\n";
-file_put_contents("$tmp/test.env", $envCommon . "APP_URL=http://127.0.0.1:" . WEB_PORT . "\nGAMBASI_API_URL=http://127.0.0.1:" . GAS_PORT . "/exec\nSTORAGE_PATH=$tmp/storage\nPANITIA_WHATSAPP=\n");
+file_put_contents("$tmp/test.env", $envCommon . "APP_URL=http://127.0.0.1:" . WEB_PORT . "\nGAMBASI_API_URL=http://127.0.0.1:" . GAS_PORT . "/exec\nSTORAGE_PATH=$tmp/storage\nPANITIA_WHATSAPP=\nPENDAFTARAN_BUKA_ISO=\nPENDAFTARAN_TUTUP_ISO=\n");
+// Server dengan jadwal pendaftaran belum dimulai / sudah lewat (backend & saklar tetap sama)
+foreach (['before' => [BEFORE_PORT, '2099-01-01T00:00:00+09:00', ''], 'after' => [AFTER_PORT, '', '2000-01-01T00:00:00+09:00']] as $w => [$port, $open, $close]) {
+    @mkdir("$tmp/storage-$w", 0777, true);
+    file_put_contents("$tmp/$w.env", $envCommon . "APP_URL=http://127.0.0.1:$port\nGAMBASI_API_URL=http://127.0.0.1:" . GAS_PORT . "/exec\nSTORAGE_PATH=$tmp/storage-$w\nPENDAFTARAN_BUKA_ISO=$open\nPENDAFTARAN_TUTUP_ISO=$close\n");
+}
 file_put_contents("$tmp/down.env", $envCommon . "APP_URL=http://127.0.0.1:" . DOWN_PORT . "\nGAMBASI_API_URL=http://127.0.0.1:1/exec\nSTORAGE_PATH=$tmp/storage-down\n");
 
 // Akun admin uji
@@ -75,6 +82,8 @@ function start(array $cmd, array $env, string $cwd, string $log): array
 $procs[] = start([$node, 'tests/gas/server.js', (string) GAS_PORT], ['GAS_TEST_SECRET' => SECRET], $root, "$tmp/gas.log");
 $procs[] = start([$php, '-d', 'upload_max_filesize=6M', '-d', 'post_max_size=8M', '-S', '127.0.0.1:' . WEB_PORT, '-t', 'public'], ['GAMBASI_ENV_FILE' => "$tmp/test.env"], $root, "$tmp/web.log");
 $procs[] = start([$php, '-S', '127.0.0.1:' . DOWN_PORT, '-t', 'public'], ['GAMBASI_ENV_FILE' => "$tmp/down.env"], $root, "$tmp/down.log");
+$procs[] = start([$php, '-S', '127.0.0.1:' . BEFORE_PORT, '-t', 'public'], ['GAMBASI_ENV_FILE' => "$tmp/before.env"], $root, "$tmp/before.log");
+$procs[] = start([$php, '-S', '127.0.0.1:' . AFTER_PORT, '-t', 'public'], ['GAMBASI_ENV_FILE' => "$tmp/after.env"], $root, "$tmp/after.log");
 
 register_shutdown_function(function () use (&$procs) {
     foreach ($procs as [$p]) {
@@ -100,6 +109,8 @@ function wait_port(int $port): void
 wait_port(GAS_PORT);
 wait_port(WEB_PORT);
 wait_port(DOWN_PORT);
+wait_port(BEFORE_PORT);
+wait_port(AFTER_PORT);
 
 // ------------------------------------------------------------------ HTTP client
 final class Browser
@@ -412,12 +423,14 @@ test('File .php ditolak', function () use ($reg, $tok1, $tmpFiles, $ref) {
 });
 
 test('PDF tanpa header %PDF di byte ke-0 ditolak (polyglot HTML)', function () use ($reg, $tok1, $tmpFiles, $ref) {
-    // finfo tetap menganggapnya application/pdf, jadi ini menguji lapisan magic bytes
-    same(mime_content_type("$tmpFiles/polyglot.pdf"), 'application/pdf', 'prasyarat: finfo bilang pdf');
+    // libmagic lama menganggapnya application/pdf (diuji lapisan magic bytes);
+    // libmagic baru menganggapnya text/html (ditolak lebih awal). Keduanya harus ditolak.
     $r = $reg->upload($tok1, 'akte:' . $ref(2), "$tmpFiles/polyglot.pdf", 'akte.pdf', 'application/pdf');
     same($r['status'], 422);
     same($r['json']['error_code'], 'INVALID_MIME');
-    ok(str_contains($r['json']['message'], 'header PDF'), $r['body']);
+    if (mime_content_type("$tmpFiles/polyglot.pdf") === 'application/pdf') {
+        ok(str_contains($r['json']['message'], 'header PDF'), $r['body']);
+    }
 
     same(mime_content_type("$tmpFiles/geser.pdf"), 'application/pdf');
     same($reg->upload($tok1, 'akte:' . $ref(2), "$tmpFiles/geser.pdf", 'akte.pdf', 'application/pdf')['json']['error_code'], 'INVALID_MIME');
@@ -635,6 +648,9 @@ test('Brute force login dikunci', function () use ($B) {
     $r = null;
     for ($i = 0; $i < 6; $i++) $r = $a->postForm('/admin/login.php', ['username' => 'superadmin', 'password' => 'x' . $i]);
     ok(str_contains($r['body'], 'Terlalu banyak percobaan login'));
+    // Admin lain dari jaringan yang sama tetap bisa login
+    $r2 = $a->postForm('/admin/login.php', ['username' => 'verif', 'password' => 'Rahasia-Uji-123']);
+    same($r2['status'], 302, 'akun lain ikut terkunci');
     clear_ratelimit();
 });
 
@@ -779,6 +795,41 @@ test('Settings: tutup pendaftaran -> form ditutup & API 410, lalu buka lagi', fu
     ok(!str_contains($b->get('/daftar-sepakbola.php')['body'], 'Pendaftaran sedang ditutup'));
 });
 
+test('Jadwal: sebelum tanggal buka -> formulir & API ditolak walau saklar aktif', function () use ($uuid, $payload, $player) {
+    $b = new Browser('http://127.0.0.1:' . BEFORE_PORT, 'win_before');
+    ok(str_contains($b->get('/')['body'], 'Pendaftaran online dibuka'), 'status landing');
+    $f = $b->get('/daftar-sepakbola.php')['body'];
+    ok(str_contains($f, 'Pendaftaran belum dibuka'), 'pesan form');
+    ok(str_contains($f, '"canSubmit":false'), 'tombol kirim harus nonaktif');
+    $r = $b->postJson('/api/submit-init.php', ['submission_token' => $uuid(), 'payload' => $payload('Club Terlalu Awal', [$player(91)])]);
+    same($r['status'], 410);
+    same($r['json']['error_code'], 'REGISTRATION_CLOSED');
+    ok(str_contains($r['json']['message'], 'belum dibuka'), $r['body']);
+});
+
+test('Jadwal: setelah tanggal tutup -> formulir & API ditolak', function () use ($uuid, $payload, $player) {
+    $b = new Browser('http://127.0.0.1:' . AFTER_PORT, 'win_after');
+    ok(str_contains($b->get('/')['body'], 'Pendaftaran online sudah ditutup'), 'status landing');
+    ok(str_contains($b->get('/daftar-sepakbola.php')['body'], 'Pendaftaran sudah ditutup'), 'pesan form');
+    $r = $b->postJson('/api/submit-init.php', ['submission_token' => $uuid(), 'payload' => $payload('Club Terlambat', [$player(92)])]);
+    same($r['status'], 410);
+    ok(str_contains($r['json']['message'], 'sudah ditutup'), $r['body']);
+});
+
+test('Jadwal: registration_window() membaca batas dengan benar', function () {
+    require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
+    $GLOBALS['GAMBASI_CONFIG']['info']['pendaftaran_buka_iso'] = '2026-10-01T00:00:00+09:00';
+    $GLOBALS['GAMBASI_CONFIG']['info']['pendaftaran_tutup_iso'] = '2026-10-14T23:59:59+09:00';
+    $t = fn(string $iso) => registration_window(strtotime($iso));
+    same($t('2026-09-30T23:59:59+09:00'), 'before');
+    same($t('2026-10-01T00:00:00+09:00'), 'open');
+    same($t('2026-10-14T23:59:59+09:00'), 'open');
+    same($t('2026-10-15T00:00:00+09:00'), 'after');
+    $GLOBALS['GAMBASI_CONFIG']['info']['pendaftaran_buka_iso'] = '';
+    $GLOBALS['GAMBASI_CONFIG']['info']['pendaftaran_tutup_iso'] = '';
+    same($t('2030-01-01T00:00:00+09:00'), 'open');
+});
+
 test('Settings: nilai tidak valid ditolak', function () use (&$super) {
     $super->get('/admin/settings.php');
     $r = $super->postForm('/admin/settings.php', ['MIN_AGE_U10' => '12', 'MAX_AGE_U10' => '10', 'REGISTRATION_OPEN' => 'true']);
@@ -859,6 +910,53 @@ test('Logout via GET tidak mengeluarkan (butuh POST+CSRF)', function () use ($lo
     $a = $login('superadmin');
     $a->get('/admin/logout.php');
     same($a->get('/admin/')['status'], 200);
+});
+
+test('Rotasi ID sesi: request paralel dengan cookie lama tidak mengeluarkan admin', function () use ($login) {
+    clear_ratelimit();
+    $a = $login('superadmin');
+    // Ambil ID sesi dari cookie jar lalu "tuakan" sesi agar rotasi 15 menit terpicu
+    $sid = null;
+    foreach (file($a->jar) as $line) {
+        $cols = explode("\t", trim($line));
+        if (count($cols) >= 7 && $cols[5] === 'GAMBASI_SID') $sid = rawurldecode($cols[6]);
+    }
+    ok($sid !== null, 'cookie sesi tidak ditemukan');
+    $file = IT_TMP . "/storage/sessions/sess_$sid";
+    ok(is_file($file), 'file sesi tidak ditemukan');
+    file_put_contents($file, preg_replace('/_created\|i:\d+;/', '_created|i:' . (time() - 1000) . ';', (string) file_get_contents($file)));
+    $jarLama = (string) file_get_contents($a->jar);
+
+    // Request A memicu rotasi
+    same($a->get('/admin/')['status'], 200);
+    // Request B yang "sudah terkirim" dengan cookie lama (thumbnail dimuat paralel)
+    $b = new Browser($a->base, 'rot_b');
+    file_put_contents($b->jar, $jarLama);
+    same($b->get('/admin/')['status'], 200, 'request paralel dengan ID lama dikeluarkan');
+    // Setelah itu, browser tetap login dengan cookie mana pun yang terakhir diterima
+    same($a->get('/admin/')['status'], 200, 'sesi baru hilang');
+    same($b->get('/admin/')['status'], 200, 'cookie terakhir dari request B tidak valid');
+});
+
+test('Rotasi ID sesi: ID lama yang dipakai lewat masa tenggang ditolak', function () use ($login) {
+    clear_ratelimit();
+    $a = $login('superadmin');
+    $sid = null;
+    foreach (file($a->jar) as $line) {
+        $cols = explode("\t", trim($line));
+        if (count($cols) >= 7 && $cols[5] === 'GAMBASI_SID') $sid = rawurldecode($cols[6]);
+    }
+    $file = IT_TMP . "/storage/sessions/sess_$sid";
+    file_put_contents($file, preg_replace('/_created\|i:\d+;/', '_created|i:' . (time() - 1000) . ';', (string) file_get_contents($file)));
+    $jarLama = (string) file_get_contents($a->jar);
+    same($a->get('/admin/')['status'], 200);
+    // Tandai sesi lama seolah sudah ditinggalkan > masa tenggang
+    $old = (string) file_get_contents($file);
+    ok(str_contains($old, '_destroyed|i:'), 'sesi lama tidak ditandai: ' . $old);
+    file_put_contents($file, preg_replace('/_destroyed\|i:\d+;/', '_destroyed|i:' . (time() - 3600) . ';', $old));
+    $b = new Browser($a->base, 'rot_c');
+    file_put_contents($b->jar, $jarLama);
+    same($b->get('/admin/')['status'], 302, 'ID lama kedaluwarsa seharusnya tidak diterima');
 });
 
 // =================================================================== OUTPUT

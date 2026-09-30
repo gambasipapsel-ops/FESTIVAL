@@ -87,14 +87,56 @@ function start_secure_session(): void
     ]);
     session_start();
 
-    // Rotasi ID berkala untuk mengurangi risiko session fixation
     $now = time();
+
+    // Sesi lama hasil rotasi: request paralel yang masih membawa ID lama diarahkan
+    // ke sesi baru selama masa tenggang, bukan dibuatkan sesi kosong (yang membuat
+    // admin tiba-tiba ter-logout saat beberapa thumbnail dimuat bersamaan).
+    if (isset($_SESSION['_destroyed'])) {
+        $newId = (string) ($_SESSION['_new_id'] ?? '');
+        if ((int) $_SESSION['_destroyed'] < $now - SESSION_ROTATE_GRACE || $newId === '') {
+            // ID lama dipakai terlalu lama setelah rotasi: anggap tidak sah
+            $_SESSION = [];
+            session_regenerate_id(true);
+            $_SESSION['_created'] = $now;
+            return;
+        }
+        session_write_close();
+        session_id($newId);
+        session_start();
+        return;
+    }
+
+    // Rotasi ID berkala untuk mengurangi risiko session fixation
     if (!isset($_SESSION['_created'])) {
         $_SESSION['_created'] = $now;
     } elseif ($now - (int) $_SESSION['_created'] > 900) {
-        session_regenerate_id(true);
-        $_SESSION['_created'] = $now;
+        rotate_session_id();
     }
+}
+
+const SESSION_ROTATE_GRACE = 120;
+
+/**
+ * Rotasi ID sesi yang aman untuk request paralel (pola dari manual PHP):
+ * sesi lama tidak langsung dihapus, melainkan ditandai `_destroyed` + menunjuk
+ * ID baru, lalu kedaluwarsa setelah SESSION_ROTATE_GRACE detik.
+ */
+function rotate_session_id(): void
+{
+    $data = $_SESSION;
+    $newId = session_create_id();
+    $_SESSION = ['_destroyed' => time(), '_new_id' => $newId];
+    session_write_close();
+
+    ini_set('session.use_strict_mode', '0');
+    session_id($newId);
+    session_start();
+    ini_set('session.use_strict_mode', '1');
+
+    unset($data['_destroyed'], $data['_new_id']);
+    $_SESSION = $data;
+    $_SESSION['_created'] = time();
 }
 
 // ---------------------------------------------------------------------------

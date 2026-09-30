@@ -13,7 +13,6 @@ storage/admin/*
 !storage/.htaccess
 
 # Build & tools lokal
-public/assets/css/tailwind.css
 tools/bin/
 tests/.tmp/
 node_modules/

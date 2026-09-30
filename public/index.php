@@ -110,6 +110,10 @@ render_view('header', ['title' => 'GAMBASI Papua Selatan 2026 — Festival Sepak
           <?php if ($regOpen): ?>
             <span class="relative flex h-2.5 w-2.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400"></span></span>
             Pendaftaran online sedang dibuka
+          <?php elseif (!empty($pub['available']) && ($pub['registration_window'] ?? '') === 'before'): ?>
+            <span class="h-2.5 w-2.5 rounded-full bg-gold-400" aria-hidden="true"></span> Pendaftaran online dibuka <?= e(info_or_tba('pendaftaran_buka')) ?>
+          <?php elseif (!empty($pub['available']) && ($pub['registration_window'] ?? '') === 'after'): ?>
+            <span class="h-2.5 w-2.5 rounded-full bg-rose-400" aria-hidden="true"></span> Pendaftaran online sudah ditutup
           <?php elseif (!empty($pub['available'])): ?>
             <span class="h-2.5 w-2.5 rounded-full bg-rose-400" aria-hidden="true"></span> Pendaftaran online sedang ditutup
           <?php else: ?>
