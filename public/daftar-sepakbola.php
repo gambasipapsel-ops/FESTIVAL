@@ -54,7 +54,7 @@ render_view('header', ['title' => 'Pendaftaran Club Sepak Bola — GAMBASI Papua
       </div>
     <?php elseif (!$open): ?>
       <div class="notice notice-error mt-6" role="alert">
-        <strong>Pendaftaran sedang ditutup.</strong> Pantau informasi resmi dari panitia.
+        <strong>Pendaftaran sedang ditutup.</strong> Pendaftaran dibuka <?= e(info_or_tba('pendaftaran_buka')) ?> dan ditutup <?= e(info_or_tba('pendaftaran_tutup')) ?>. Pantau informasi resmi dari panitia.
       </div>
     <?php elseif (!$rulesReady): ?>
       <div class="notice notice-warn mt-6" role="alert">
@@ -82,7 +82,7 @@ render_view('header', ['title' => 'Pendaftaran Club Sepak Bola — GAMBASI Papua
     <div class="mt-4 flex flex-col gap-3 rounded-2xl bg-white p-4 ring-1 ring-[#25D366]/40 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-sm text-slate-700">
         <strong class="text-slate-900">Butuh bantuan saat mengisi formulir?</strong><br class="sm:hidden">
-        Tanya langsung admin/penyelenggara via WhatsApp <strong class="whitespace-nowrap"><?= e(admin_whatsapp_display()) ?></strong>.
+        Tanya langsung admin/penyelenggara via WhatsApp <strong><?= e(admin_contacts_text()) ?></strong>.
       </p>
       <?php render_view('partials/wa-button', ['label' => 'Tanya Admin', 'variant' => 'outline', 'id' => 'ask-admin']); ?>
     </div>
@@ -114,12 +114,13 @@ render_view('header', ['title' => 'Pendaftaran Club Sepak Bola — GAMBASI Papua
               <?php endforeach; ?>
             </div>
             <p class="field-error" id="err-kategori" hidden></p>
+            <p class="mt-3 text-sm text-slate-600"><strong class="text-slate-900">Khusus U-10:</strong> pertandingan dapat diikuti oleh club maupun sekolah dasar yang mendaftar.</p>
           </fieldset>
 
           <div class="mt-6 grid gap-5 sm:grid-cols-2">
             <div class="sm:col-span-2">
               <label for="club-nama_club" class="field-label">Nama Club <span class="req">*</span></label>
-              <input id="club-nama_club" data-group="club" data-name="nama_club" class="field-input" maxlength="100" required autocomplete="organization" placeholder="Contoh: SSB Garuda Merauke">
+              <input id="club-nama_club" data-group="club" data-name="nama_club" class="field-input" maxlength="100" required autocomplete="organization" placeholder="Contoh: SSB Garuda Merauke (U-10 juga dapat: SD Negeri 1 Merauke)">
               <p class="field-error" hidden></p>
             </div>
             <div class="sm:col-span-2">
@@ -210,9 +211,10 @@ render_view('header', ['title' => 'Pendaftaran Club Sepak Bola — GAMBASI Papua
         <div class="form-card">
           <h2 id="s4-title" class="form-card-title">4. Dokumen Pemain</h2>
           <ul class="mt-3 space-y-1 text-sm text-slate-600">
-            <li><strong>Akte kelahiran:</strong> PDF, JPG, JPEG, PNG · maks 5 MB</li>
+            <li><strong>Akte kelahiran asli:</strong> PDF, JPG, JPEG, PNG · maks 5 MB</li>
             <li><strong>Foto full body:</strong> JPG, JPEG, PNG · maks 5 MB</li>
           </ul>
+          <p class="mt-3 rounded-xl bg-gold-300/30 px-4 py-3 text-sm font-semibold text-amber-900">Pemain wajib mengunggah akte kelahiran yang asli. Dokumen yang tidak berwarna (hitam-putih) dianggap bukan asli.</p>
           <p class="mt-3 rounded-xl bg-gold-300/30 px-4 py-3 text-sm font-semibold text-amber-900">Foto wajib memperlihatkan pemain secara penuh dari kepala sampai kaki.</p>
           <div id="documents" class="mt-6 space-y-4"></div>
         </div>

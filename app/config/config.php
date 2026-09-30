@@ -72,6 +72,8 @@ return [
         'wilayah'   => 'MERAUKE — PAPUA SELATAN',
         'kategori'  => ['U10' => 'U-10', 'U12' => 'U-12'],
         'tanggal_mulai_iso' => '2026-10-30',
+        'kick_off'  => '30 OKTOBER 2026, PUKUL 14.00 WIT',
+        'kick_off_iso' => '2026-10-30T14:00:00+09:00',
     ],
 
     'api' => [
@@ -86,15 +88,25 @@ return [
         'kontak_nama'        => env('PANITIA_NAMA_KONTAK'),
         // Nomor WhatsApp admin/penyelenggara resmi (dapat diganti via PANITIA_WHATSAPP di .env)
         'kontak_whatsapp'    => env('PANITIA_WHATSAPP') !== '' ? env('PANITIA_WHATSAPP') : '082345328926',
+        // Admin tambahan yang dapat dihubungi langsung via WhatsApp
+        'admin_kontak'       => [
+            ['nama' => 'Benni Fofied', 'whatsapp' => '082239966100'],
+            ['nama' => 'Kahar',        'whatsapp' => '085244513776'],
+        ],
         'kontak_email'       => env('PANITIA_EMAIL') !== '' ? env('PANITIA_EMAIL') : 'gambasipapsel@gmail.com',
         'sekretariat'        => env('SEKRETARIAT'),
         // Ketetapan panitia: pendaftaran GRATIS (tidak dipungut biaya)
         'biaya_pendaftaran'  => env('BIAYA_PENDAFTARAN') !== '' ? env('BIAYA_PENDAFTARAN') : 'GRATIS — tidak dipungut biaya',
         'pendaftaran_gratis' => env('BIAYA_PENDAFTARAN') === '' || stripos(env('BIAYA_PENDAFTARAN'), 'gratis') !== false,
-        'jadwal_pendaftaran' => env('JADWAL_PENDAFTARAN'),
-        'batas_pendaftaran'  => env('BATAS_PENDAFTARAN'),
+        // Jadwal resmi panitia (dapat diganti via .env)
+        'pendaftaran_buka'   => env('PENDAFTARAN_BUKA') !== '' ? env('PENDAFTARAN_BUKA') : '1 Oktober 2026',
+        'pendaftaran_tutup'  => env('PENDAFTARAN_TUTUP') !== '' ? env('PENDAFTARAN_TUTUP') : '14 Oktober 2026',
+        'jadwal_pendaftaran' => env('JADWAL_PENDAFTARAN') !== '' ? env('JADWAL_PENDAFTARAN') : '1 – 14 Oktober 2026',
+        'batas_pendaftaran'  => env('BATAS_PENDAFTARAN') !== '' ? env('BATAS_PENDAFTARAN') : '14 Oktober 2026',
         'jadwal_verifikasi'  => env('JADWAL_VERIFIKASI'),
-        'technical_meeting'  => env('TECHNICAL_MEETING'),
+        'pra_meeting'        => env('PRA_MEETING') !== '' ? env('PRA_MEETING') : '17 Oktober 2026',
+        'technical_meeting'  => env('TECHNICAL_MEETING') !== '' ? env('TECHNICAL_MEETING') : '24 Oktober 2026',
+        'tempat_meeting'     => env('TEMPAT_MEETING') !== '' ? env('TEMPAT_MEETING') : 'Aula Kodim 1707 Merauke',
     ],
 
     // Media sosial resmi (dapat diganti via .env)

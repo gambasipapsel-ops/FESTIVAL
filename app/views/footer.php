@@ -39,6 +39,12 @@ $wa = admin_whatsapp_link();
             <a class="font-semibold text-gold-400 hover:underline" href="<?= e($wa) ?>" target="_blank" rel="noopener noreferrer"><?= e(config('info.kontak_whatsapp')) ?></a>
           <?php else: ?><span class="text-slate-300">Akan diumumkan panitia</span><?php endif; ?>
         </li>
+        <?php foreach (admin_contacts() as $c): ?>
+          <li>
+            <span class="text-slate-500">Admin <?= e($c['nama']) ?>:</span>
+            <a class="font-semibold text-gold-400 hover:underline" href="<?= e($c['link']) ?>" target="_blank" rel="noopener noreferrer"><?= e($c['nomor']) ?></a>
+          </li>
+        <?php endforeach; ?>
         <li>
           <span class="text-slate-500">Email:</span>
           <?php if (has_info('kontak_email')): ?>

@@ -127,6 +127,33 @@ function admin_whatsapp_display(): string
     return (string) config('info.kontak_whatsapp');
 }
 
+/**
+ * Admin tambahan (bernama) beserta link WhatsApp masing-masing.
+ * @return array<int, array{nama: string, nomor: string, link: string}>
+ */
+function admin_contacts(): array
+{
+    $text = 'Halo ' . config('event.nama') . ', saya ingin bertanya tentang pendaftaran Festival Sepak Bola Usia Dini U-10 & U-12.';
+    $out = [];
+    foreach ((array) config('info.admin_kontak', []) as $c) {
+        $link = whatsapp_link((string) $c['whatsapp'], $text);
+        if ($link !== '') {
+            $out[] = ['nama' => (string) $c['nama'], 'nomor' => (string) $c['whatsapp'], 'link' => $link];
+        }
+    }
+    return $out;
+}
+
+/** Semua kontak admin sebagai teks, mis. "0823… (Admin), Benni Fofied 0822…, Kahar 0852…". */
+function admin_contacts_text(): string
+{
+    $parts = [admin_whatsapp_display() . ' (Admin)'];
+    foreach (admin_contacts() as $c) {
+        $parts[] = $c['nama'] . ' ' . $c['nomor'];
+    }
+    return implode(', ', $parts);
+}
+
 function format_datetime(string $iso): string
 {
     if ($iso === '') {

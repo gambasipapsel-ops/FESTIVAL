@@ -19,23 +19,29 @@ $steps = [
     ['Pilih Kategori & Data Club', 'Pilih kategori U-10 atau U-12, lalu isi identitas dan alamat club.'],
     ['Data Official', 'Isi nama manager, pelatih, serta nomor WhatsApp yang aktif.'],
     ['Data Pemain', 'Tambahkan pemain satu per satu lengkap dengan NIK, tanggal lahir, dan data orang tua/wali.'],
-    ['Unggah Dokumen', 'Unggah akte kelahiran dan foto full body untuk setiap pemain.'],
+    ['Unggah Dokumen', 'Unggah akte kelahiran asli (berwarna) dan foto full body untuk setiap pemain.'],
     ['Review & Kirim', 'Periksa kembali seluruh data, lalu kirim pendaftaran.'],
     ['Nomor Pendaftaran', 'Simpan nomor pendaftaran (GMB-SB-2026-xxxx) dan pantau status verifikasi.'],
 ];
 
+$tempatMeeting = info_or_tba('tempat_meeting');
+
 $timeline = [
     ['Pendaftaran Online', has_info('jadwal_pendaftaran') ? (string) config('info.jadwal_pendaftaran') : ($regOpen ? 'Sedang dibuka' : 'Akan diumumkan panitia'),
-        has_info('batas_pendaftaran') ? 'Batas akhir: ' . config('info.batas_pendaftaran') : 'Batas akhir pendaftaran mengikuti pengumuman panitia.'],
-    ['Verifikasi Dokumen', info_or_tba('jadwal_verifikasi'), 'Panitia memeriksa data club, pemain, akte kelahiran, dan foto.'],
-    ['Technical Meeting', info_or_tba('technical_meeting'), 'Informasi teknis pelaksanaan festival bagi official club.'],
+        sprintf('Dibuka %s, ditutup %s.', info_or_tba('pendaftaran_buka'), info_or_tba('pendaftaran_tutup'))],
+    ['Verifikasi Dokumen', info_or_tba('jadwal_verifikasi'), 'Panitia memeriksa data club, pemain, akte kelahiran asli, dan foto.'],
+    ['Pra Meeting', info_or_tba('pra_meeting'), 'Bertempat di ' . $tempatMeeting . '.'],
+    ['Technical Meeting', info_or_tba('technical_meeting'), 'Informasi teknis pelaksanaan festival bagi official club. Bertempat di ' . $tempatMeeting . '.'],
+    ['Kick Off', $ev['kick_off'], $ev['lokasi']],
     ['Festival GAMBASI', $ev['tanggal'], $ev['lokasi']],
 ];
 
 $faqs = [
-    ['Siapa yang dapat mendaftar?', 'Club/SSB sepak bola usia dini yang memiliki pemain sesuai kategori U-10 atau U-12 dan memenuhi ketentuan panitia.'],
+    ['Kapan pendaftaran dibuka dan ditutup?', 'Pendaftaran dibuka pada ' . info_or_tba('pendaftaran_buka') . ' dan ditutup pada ' . info_or_tba('pendaftaran_tutup') . '.'],
+    ['Siapa yang dapat mendaftar?', 'Club/SSB sepak bola usia dini yang memiliki pemain sesuai kategori U-10 atau U-12 dan memenuhi ketentuan panitia. Khusus kategori U-10, pertandingan dapat diikuti oleh club maupun sekolah dasar yang mendaftar.'],
+    ['Kapan Pra Meeting, Technical Meeting, dan Kick Off?', 'Pra Meeting: ' . info_or_tba('pra_meeting') . ' · Technical Meeting: ' . info_or_tba('technical_meeting') . ' (keduanya di ' . $tempatMeeting . ') · Kick Off: ' . $ev['kick_off'] . '.'],
     ['Apakah satu club boleh mendaftar di dua kategori?', 'Ya. Lakukan pendaftaran terpisah untuk kategori U-10 dan U-12. Setiap pendaftaran mendapat nomor pendaftaran sendiri.'],
-    ['Dokumen apa saja yang wajib diunggah?', 'Setiap pemain wajib memiliki akte kelahiran (PDF/JPG/PNG) dan foto full body (JPG/PNG), masing-masing maksimal 5 MB. Logo club bersifat opsional.'],
+    ['Dokumen apa saja yang wajib diunggah?', 'Setiap pemain wajib mengunggah akte kelahiran asli (PDF/JPG/PNG) dan foto full body (JPG/PNG), masing-masing maksimal 5 MB. Akte kelahiran asli berwarna; dokumen yang tidak berwarna (hitam-putih) dianggap bukan asli. Logo club bersifat opsional.'],
     ['Bagaimana ketentuan foto full body?', 'Foto wajib memperlihatkan pemain secara penuh dari kepala sampai kaki, jelas, dan tidak buram. Foto hanya digunakan untuk kebutuhan administrasi peserta.'],
     ['Bagaimana cara mengecek status pendaftaran?', 'Buka menu Cek Pendaftaran dan masukkan nomor pendaftaran Anda, contoh: GMB-SB-2026-0001.'],
     ['Apa arti status pendaftaran?', 'PENDING: menunggu diperiksa · REVIEW: sedang diperiksa · REVISION: perlu perbaikan · VERIFIED: terverifikasi · REJECTED: tidak memenuhi ketentuan.'],
@@ -44,7 +50,7 @@ $faqs = [
         ? 'Pendaftaran GRATIS, tidak dipungut biaya apa pun. Waspadai pihak yang meminta transfer atau pembayaran atas nama GAMBASI Papua Selatan, dan laporkan ke admin via WhatsApp ' . admin_whatsapp_display() . '.'
         : (string) config('info.biaya_pendaftaran')],
     ['Saya salah mengisi data setelah mengirim, bagaimana?', 'Hubungi admin melalui WhatsApp ' . admin_whatsapp_display() . ' dengan menyebutkan nomor pendaftaran. Panitia dapat memberi status REVISION beserta catatan perbaikan.'],
-    ['Ke mana saya bisa bertanya?', 'Hubungi admin/penyelenggara melalui WhatsApp ' . admin_whatsapp_display() . ' atau email ' . config('info.kontak_email') . ', atau tekan tombol "Tanya Admin" yang ada di setiap halaman.'],
+    ['Ke mana saya bisa bertanya?', 'Hubungi admin/penyelenggara melalui WhatsApp ' . admin_contacts_text() . ' atau email ' . config('info.kontak_email') . ', atau tekan tombol "Tanya Admin" yang ada di setiap halaman.'],
     ['Di mana saya bisa mendapat informasi terbaru?', 'Ikuti media sosial resmi: Facebook "GAMBASI Papua Selatan", Instagram @gambasipapuaselatan, dan TikTok @gambasipapuaselatan.'],
 ];
 
@@ -84,6 +90,10 @@ render_view('header', ['title' => 'GAMBASI Papua Selatan 2026 — Festival Sepak
             <svg class="h-6 w-6 text-gold-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 1114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
             <span class="text-sm font-semibold sm:text-base">Lapangan Kodim Merauke</span>
           </li>
+          <li class="flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-3 ring-1 ring-white/10">
+            <svg class="h-6 w-6 text-gold-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <span class="text-sm font-semibold sm:text-base">Kick Off 30 Oktober · 14.00 WIT</span>
+          </li>
         </ul>
 
         <div class="mt-10 flex flex-col gap-3 sm:flex-row">
@@ -114,7 +124,7 @@ render_view('header', ['title' => 'GAMBASI Papua Selatan 2026 — Festival Sepak
         </div>
         <div class="relative mx-auto max-w-md rounded-[2rem] bg-gradient-to-br from-white/10 to-white/[0.02] p-6 ring-1 ring-white/15 backdrop-blur sm:p-8">
           <p class="text-xs font-bold uppercase tracking-[0.2em] text-gold-400">Menuju Kick-off</p>
-          <div id="countdown" class="mt-4 grid grid-cols-4 gap-2 text-center" data-target="2026-10-30T00:00:00+09:00" aria-live="off">
+          <div id="countdown" class="mt-4 grid grid-cols-4 gap-2 text-center" data-target="<?= e($ev['kick_off_iso']) ?>" aria-live="off">
             <?php foreach (['Hari', 'Jam', 'Menit', 'Detik'] as $unit): ?>
               <div class="rounded-2xl bg-royal-950/60 px-1 py-3 ring-1 ring-white/10">
                 <span class="block font-display text-3xl font-extrabold tabular-nums sm:text-4xl" data-unit="<?= e(strtolower($unit)) ?>">--</span>
@@ -186,7 +196,11 @@ render_view('header', ['title' => 'GAMBASI Papua Selatan 2026 — Festival Sepak
             ['Kegiatan', $ev['kegiatan']],
             ['Kategori', 'U-10 & U-12'],
             ['Biaya Pendaftaran', info_or_tba('biaya_pendaftaran')],
-            ['Batas Pendaftaran', info_or_tba('batas_pendaftaran')],
+            ['Pendaftaran Dibuka', info_or_tba('pendaftaran_buka')],
+            ['Penutupan Pendaftaran', info_or_tba('pendaftaran_tutup')],
+            ['Kick Off', $ev['kick_off']],
+            ['Pra Meeting', info_or_tba('pra_meeting') . ' · ' . $tempatMeeting],
+            ['Technical Meeting', info_or_tba('technical_meeting') . ' · ' . $tempatMeeting],
         ] as [$k, $v]): ?>
           <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
             <dt class="text-xs font-bold uppercase tracking-widest text-royal-700"><?= e($k) ?></dt>
@@ -213,6 +227,9 @@ render_view('header', ['title' => 'GAMBASI Papua Selatan 2026 — Festival Sepak
               <p class="text-xs font-bold uppercase tracking-[0.2em] text-gold-400">Festival Sepak Bola Usia Dini</p>
               <h3 class="mt-2 font-display text-7xl font-extrabold sm:text-8xl"><?= e($label) ?></h3>
               <p class="mt-4 text-white/80"><?= e(age_rule_text($pub['age_rules'][$code] ?? null)) ?></p>
+              <?php if ($code === 'U10'): ?>
+                <p class="mt-3 inline-block rounded-xl bg-gold-400/20 px-3 py-2 text-sm font-semibold text-gold-300 ring-1 ring-gold-400/40">Khusus U-10: pertandingan dapat diikuti oleh club maupun sekolah dasar yang mendaftar.</p>
+              <?php endif; ?>
               <p class="mt-1 text-sm text-white/60">Kode kategori pada formulir: <span class="font-mono font-semibold text-white"><?= e($code) ?></span></p>
               <a href="<?= e(url('/daftar-sepakbola.php?kategori=' . $code)) ?>" class="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold uppercase tracking-wider text-royal-900 transition group-hover:bg-gold-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gold-300/60">
                 Daftar <?= e($label) ?>
@@ -235,6 +252,7 @@ render_view('header', ['title' => 'GAMBASI Papua Selatan 2026 — Festival Sepak
           <?php foreach ([
               is_registration_free() ? 'Pendaftaran GRATIS — tidak dipungut biaya apa pun.' : 'Biaya pendaftaran: ' . config('info.biaya_pendaftaran'),
               'Club/SSB mendaftar pada kategori U-10 atau U-12.',
+              'Khusus U-10: pertandingan dapat diikuti oleh club maupun sekolah dasar yang mendaftar.',
               'Data club lengkap: nama club, alamat, distrik, kabupaten, dan provinsi.',
               'Official club: nama manager dan nama pelatih, serta nomor WhatsApp aktif.',
               'Data setiap pemain: nama lengkap, NIK (16 digit), tempat & tanggal lahir, jenis kelamin, posisi, dan nomor punggung.',
@@ -257,8 +275,9 @@ render_view('header', ['title' => 'GAMBASI Papua Selatan 2026 — Festival Sepak
           <div class="card flex gap-4 p-6">
             <span class="icon-badge"><svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg></span>
             <div>
-              <h3 class="font-display text-xl font-bold uppercase text-slate-900">Akte Kelahiran <span class="req-pill">Wajib</span></h3>
+              <h3 class="font-display text-xl font-bold uppercase text-slate-900">Akte Kelahiran Asli <span class="req-pill">Wajib</span></h3>
               <p class="mt-1 text-sm text-slate-600">Format PDF, JPG, JPEG, atau PNG. Maksimal 5 MB. Pastikan tulisan terbaca jelas.</p>
+              <p class="mt-2 rounded-lg bg-gold-300/30 px-3 py-2 text-sm font-semibold text-amber-900">Unggah akte kelahiran yang asli. Dokumen yang tidak berwarna (hitam-putih) dianggap bukan asli.</p>
             </div>
           </div>
           <div class="card flex gap-4 p-6">
@@ -347,6 +366,11 @@ render_view('header', ['title' => 'GAMBASI Papua Selatan 2026 — Festival Sepak
           <p class="font-display text-xl font-bold uppercase text-slate-900">Masih ada pertanyaan?</p>
           <p class="text-sm text-slate-600">Hubungi admin/penyelenggara via WhatsApp <strong class="whitespace-nowrap text-slate-900"><?= e(admin_whatsapp_display()) ?></strong>
             atau email <a class="font-semibold text-royal-700 hover:underline" href="mailto:<?= e(config('info.kontak_email')) ?>"><?= e(config('info.kontak_email')) ?></a></p>
+          <ul class="mt-2 space-y-1 text-sm text-slate-600">
+            <?php foreach (admin_contacts() as $c): ?>
+              <li>Admin <?= e($c['nama']) ?>: <a class="font-semibold whitespace-nowrap text-royal-700 hover:underline" href="<?= e($c['link']) ?>" target="_blank" rel="noopener noreferrer"><?= e($c['nomor']) ?></a></li>
+            <?php endforeach; ?>
+          </ul>
         </div>
         <?php render_view('partials/wa-button', ['label' => 'Chat Admin']); ?>
       </div>

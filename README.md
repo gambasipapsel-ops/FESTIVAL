@@ -195,10 +195,16 @@ PANITIA_NAMA_KONTAK=
 PANITIA_EMAIL=
 SEKRETARIAT=
 BIAYA_PENDAFTARAN=
-JADWAL_PENDAFTARAN=
-BATAS_PENDAFTARAN=
+
+# Jadwal resmi (default bawaan aplikasi bila dikosongkan)
+PENDAFTARAN_BUKA=1 Oktober 2026
+PENDAFTARAN_TUTUP=14 Oktober 2026
+JADWAL_PENDAFTARAN=1 – 14 Oktober 2026
+BATAS_PENDAFTARAN=14 Oktober 2026
 JADWAL_VERIFIKASI=
-TECHNICAL_MEETING=
+PRA_MEETING=17 Oktober 2026
+TECHNICAL_MEETING=24 Oktober 2026
+TEMPAT_MEETING=Aula Kodim 1707 Merauke
 ```
 
 Buka `http://gambasi.test/admin/settings.php`. Semua indikator di **Status Sistem** harus `OK`.
